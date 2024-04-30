@@ -1,5 +1,5 @@
-# Use a node image as base
-FROM node:14-alpine
+# Stage 1: Build React application
+FROM node:14-alpine as build
 
 # Set the working directory in the container
 WORKDIR /app
@@ -16,8 +16,14 @@ COPY . .
 # Build the React app
 RUN npm run build
 
-# Serve the React app using a lightweight web server
+# Stage 2: Serve the React application using Nginx
 FROM nginx:alpine
-COPY --from=0 /app/build /usr/share/nginx/html
+
+# Copy the built React app from the previous stage into the Nginx server directory
+COPY --from=build /app/build /usr/share/nginx/html
+
+# Expose port 80
 EXPOSE 80
+
+# Command to start Nginx and serve the React app
 CMD ["nginx", "-g", "daemon off;"]
